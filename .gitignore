@@ -1,6 +1,7 @@
 volume
 .terraform
 .terraform.lock*
-terraform.tfstate
+terraform.tfstate*
 terraform.tfstate.backup
 *.tfvars
+.ssh/
