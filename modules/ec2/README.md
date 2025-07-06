@@ -112,6 +112,7 @@ module "ec2" {
 |------|---------|
 | terraform | >= 1.0 |
 | aws | >= 5.0 |
+| random | >= 3.0 |
 | tls | >= 4.0 |
 | local | >= 2.0 |
 
@@ -120,6 +121,7 @@ module "ec2" {
 | Name | Version |
 |------|---------|
 | aws | >= 5.0 |
+| random | >= 3.0 |
 | tls | >= 4.0 |
 | local | >= 2.0 |
 
