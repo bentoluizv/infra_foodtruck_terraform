@@ -1,16 +1,16 @@
-variable "instance_type" {
-  type    = string
-  default = "t2.micro"
-}
+variable "instance_type" {}
 
-variable "environment" {
-  type = string
-}
+variable "environment" {}
 
-variable "ami_owner" {
-  type = string
-}
+variable "ami_owner" {}
 
-variable "subnet_id" {
-  type = string
+variable "instance_name" {}
+
+variable "aws_region" {}
+
+variable "subnet_id" {}
+
+variable "vpc_id" {}
+
+variable "ubuntu_image_name" {
 }
