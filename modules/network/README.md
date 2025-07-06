@@ -1,34 +1,89 @@
 # Network Module
 
-This Terraform module creates a basic VPC infrastructure for web servers with public internet access.
+A Terraform module that creates a basic VPC infrastructure with public internet access for web applications.
 
-## Description
+## Overview
 
-The Network module provisions a complete VPC setup with the following components:
-- VPC with configurable CIDR block
-- Public subnet with auto-assigned public IPs
-- Internet Gateway for internet connectivity
-- Route table with default route to internet
-- Route table association for the public subnet
+This module provisions a complete VPC setup with public networking capabilities, designed for simple web server deployments that require direct internet connectivity.
+
+## Features
+
+- **VPC**: Custom VPC with DNS support and hostnames enabled
+- **Public Subnet**: Single public subnet with auto-assigned public IPs
+- **Internet Gateway**: Provides internet connectivity for the VPC
+- **Route Table**: Configures routing for public internet access
+- **Resource Tagging**: Consistent tagging across all resources
+
+## Architecture
+
+```
+Internet
+    │
+    ▼
+┌─────────────────┐
+│ Internet Gateway│
+│   (igw)         │
+└─────────────────┘
+    │
+    ▼
+┌─────────────────┐
+│      VPC        │
+│  10.0.0.0/16    │
+│ (web_server_vpc)│
+└─────────────────┘
+    │
+    ▼
+┌──────────────────────────┐
+│  Public Subnet           │
+│  10.0.0.0/20             │
+│ (public_subnet_1a)       │
+│ (Auto-assign Public IPs) │
+└──────────────────────────┘
+```
 
 ## Usage
 
-### Basic Usage
+### Basic Example
 
 ```hcl
 module "network" {
   source = "./modules/network"
+
+  environment   = "production"
+  instance_name = "foodtruck"
+  aws_region    = "us-east-1"
 }
 ```
 
-### Custom CIDR Blocks
+### Development Environment
 
 ```hcl
 module "network" {
   source = "./modules/network"
 
-  vpc_cidr_block           = "172.16.0.0/16"
-  public_subnet_cidr_block = "172.16.1.0/24"
+  environment   = "development"
+  instance_name = "foodtruck-dev"
+  aws_region    = "us-west-2"
+}
+```
+
+### Integration with EC2 Module
+
+```hcl
+module "network" {
+  source = "./modules/network"
+
+  environment   = "production"
+  instance_name = "foodtruck"
+  aws_region    = "us-east-1"
+}
+
+module "ec2" {
+  source = "./modules/ec2"
+
+  environment = "production"
+  subnet_id   = module.network.subnet.id
+  vpc_id      = module.network.vpc.id
 }
 ```
 
@@ -49,109 +104,52 @@ module "network" {
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| vpc_cidr_block | The CIDR block for the VPC | `string` | `"10.0.0.0/28"` | no |
-| public_subnet_cidr_block | The CIDR block for the public subnet | `string` | `"10.0.0.0/28"` | no |
+| environment | The environment name (e.g., production, development, staging) | `string` | n/a | yes |
+| instance_name | The name prefix for all resources | `string` | n/a | yes |
+| aws_region | The AWS region where resources will be created | `string` | n/a | yes |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
-| vpc_id | The ID of the VPC |
-| vpc_cidr_block | The CIDR block of the VPC |
-| subnet_id | The ID of the public subnet |
-| subnet_cidr_block | The CIDR block of the public subnet |
-| internet_gateway_id | The ID of the internet gateway |
-| route_table_id | The ID of the route table |
+| vpc | The VPC resource object with all attributes |
+| subnet | The public subnet resource object with all attributes |
+| internet_gateway | The internet gateway resource object with all attributes |
+| route_table | The route table resource object with all attributes |
 
 ## Resources Created
 
-| Resource | Name | Description |
-|----------|------|-------------|
-| aws_vpc | web_server_vpc | Main VPC for the web server infrastructure |
-| aws_subnet | public_subnet | Public subnet with auto-assigned public IPs |
-| aws_internet_gateway | web_server_ig | Internet Gateway for VPC internet connectivity |
-| aws_route_table | web_server_route_table | Route table with default route to internet |
-| aws_route_table_association | web_server_route_table_association | Associates the route table with the public subnet |
+| Resource Type | Resource Name | Description |
+|---------------|---------------|-------------|
+| `aws_vpc` | `web_server_vpc` | Main VPC with CIDR block 10.0.0.0/16 |
+| `aws_subnet` | `public_subnet_1a` | Public subnet in availability zone 1a (10.0.0.0/20) |
+| `aws_internet_gateway` | `igw` | Internet Gateway attached to the VPC |
+| `aws_route_table` | `igw_route_table` | Route table for public internet access |
+| `aws_route` | `public_internet_access` | Default route (0.0.0.0/0) to internet gateway |
+| `aws_route_table_association` | `public_subnet_1a` | Associates route table with public subnet |
 
-## Examples
+## Network Configuration
 
-### Development Environment
+### VPC Settings
+- **CIDR Block**: `10.0.0.0/16`
+- **DNS Support**: Enabled
+- **DNS Hostnames**: Enabled
 
-```hcl
-module "network_dev" {
-  source = "./modules/network"
+### Subnet Settings
+- **CIDR Block**: `10.0.0.0/20`
+- **Availability Zone**: `{aws_region}a` (e.g., us-east-1a)
+- **Auto-assign Public IPs**: Enabled
+- **Route Table**: Associated with public route table
 
-  vpc_cidr_block           = "10.0.0.0/16"
-  public_subnet_cidr_block = "10.0.1.0/24"
-}
-```
+### Routing
+- **Default Route**: `0.0.0.0/0` → Internet Gateway
+- **Route Table**: Public route table with internet access
 
-### Production Environment
+## Resource Tagging
 
-```hcl
-module "network_prod" {
-  source = "./modules/network"
-
-  vpc_cidr_block           = "172.16.0.0/16"
-  public_subnet_cidr_block = "172.16.1.0/24"
-}
-```
-
-### Using with EC2 Module
-
-```hcl
-module "network" {
-  source = "./modules/network"
-}
-
-module "ec2" {
-  source = "./modules/ec2"
-
-  environment = "production"
-  # Note: You would need to add subnet_id variable to EC2 module
-  # subnet_id = module.network.subnet_id
-}
-```
-
-## Network Architecture
-
-```
-Internet
-    │
-    ▼
-┌─────────────────┐
-│ Internet Gateway│
-└─────────────────┘
-    │
-    ▼
-┌─────────────────┐
-│      VPC        │
-│  10.0.0.0/28    │
-└─────────────────┘
-    │
-    ▼
-┌─────────────────┐
-│  Public Subnet  │
-│  10.0.0.0/28    │
-│ (Auto-assign    │
-│  Public IPs)    │
-└─────────────────┘
-```
-
-## Notes
-
-- The VPC and subnet use the same CIDR block by default (`10.0.0.0/28`)
-- The public subnet has `map_public_ip_on_launch = true` for automatic public IP assignment
-- The route table includes a default route (`0.0.0.0/0`) to the internet gateway
-- All resources are tagged with descriptive names for easy identification
-- This module is designed for simple web server deployments with public internet access
-
-## Security Considerations
-
-- This module creates a public-facing network infrastructure
-- Consider adding security groups to control traffic flow
-- For production environments, consider implementing a more complex network architecture with private subnets
-- The current setup allows all outbound internet traffic and inbound traffic based on security group rules
+All resources are automatically tagged with:
+- `Name`: `{instance_name}-{resource-type}` (e.g., `foodtruck-vpc`)
+- `Environment`: The environment value provided
 
 ## License
 
