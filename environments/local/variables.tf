@@ -1,22 +1,35 @@
+variable "instance_name" {
+  type        = string
+  description = "The name of the instance"
+  default     = "app-server"
+}
+
 variable "environment" {
-  type    = string
-  default = "local"
+  type        = string
+  description = "The environment"
+  default     = "local"
 }
 
-variable "vpc_cidr_block" {
+variable "aws_region" {
   type        = string
-  description = "The CIDR block for the VPC"
-  default     = "10.0.0.0/28"
+  description = "The AWS region"
+  default     = "sa-east-1"
 }
 
-variable "public_subnet_cidr_block" {
+variable "instance_type" {
   type        = string
-  description = "The CIDR block for the public subnet"
-  default     = "10.0.0.0/28"
+  description = "The type of the instance"
+  default     = "t2.micro"
 }
 
 variable "ami_owner" {
   type        = string
-  description = "The owner of the AMI Localstack"
+  description = "The owner of the AMI"
   default     = "000000000000"
+}
+
+variable "ubuntu_image_name" {
+  type        = string
+  description = "The name of the Ubuntu image"
+  default     = "ubuntu-22.04-jammy-jellyfish"
 }
