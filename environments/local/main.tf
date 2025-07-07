@@ -20,3 +20,10 @@ module "ec2" {
   vpc_id            = module.network.vpc.id
   ubuntu_image_name = var.ubuntu_image_name
 }
+
+module "s3" {
+  source = "../../modules/s3"
+
+  bucket_name = "backend"
+  environment = var.environment
+}
