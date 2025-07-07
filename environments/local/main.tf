@@ -24,6 +24,15 @@ module "ec2" {
 module "s3" {
   source = "../../modules/s3"
 
-  bucket_name = "backend"
+  bucket_name = "terraform-lock-backend"
   environment = var.environment
+}
+
+module "dynamodb" {
+  source         = "../../modules/dynamodb"
+  environment    = var.environment
+  table_name     = "terraform-lock-backend"
+  hash_key       = "LockID"
+  attribute_name = "LockID"
+  attribute_type = "S"
 }
