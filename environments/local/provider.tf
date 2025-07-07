@@ -5,6 +5,17 @@ terraform {
       version = "~> 6.0"
     }
   }
+
+  backend "s3" {
+    bucket           = "terraform-lock-backend"
+    key              = "tfkey/terraform.tfstate"
+    region           = "sa-east-1"
+    endpoint         = "http://localhost:4566"
+    sts_endpoint     = "http://localhost:4566"
+    force_path_style = true
+    encrypt          = true
+    use_lockfile     = true
+  }
 }
 
 provider "aws" {
@@ -40,4 +51,6 @@ provider "aws" {
     stepfunctions  = "http://localhost:4566"
     sts            = "http://localhost:4566"
   }
+
 }
+
