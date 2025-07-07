@@ -2,11 +2,6 @@
 
 set -e
 
-while ! ping -c1 archive.ubuntu.com &>/dev/null; do
-  echo "Aguardando rede..."
-  sleep 2
-done
-
 # Add Docker's official GPG key:
 sudo apt-get update
 
