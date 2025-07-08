@@ -20,3 +20,19 @@ module "ec2" {
   vpc_id            = module.network.vpc.id
   ubuntu_image_name = var.ubuntu_image_name
 }
+
+module "s3" {
+  source = "../../modules/s3"
+
+  bucket_name = "terraform-lock-backend"
+  environment = var.environment
+}
+
+module "dynamodb" {
+  source         = "../../modules/dynamodb"
+  environment    = var.environment
+  table_name     = "terraform-lock-backend"
+  hash_key       = "LockID"
+  attribute_name = "LockID"
+  attribute_type = "S"
+}

@@ -13,7 +13,7 @@ resource "aws_instance" "app_server" {
   subnet_id                   = var.subnet_id
   associate_public_ip_address = true
   key_name                    = aws_key_pair.deployer.key_name
-  security_groups             = [aws_security_group.security_group.id]
+  vpc_security_group_ids      = [aws_security_group.security_group.id]
 
   user_data = file("${path.module}/scripts/install_dependencies.sh")
 
